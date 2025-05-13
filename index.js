@@ -51,7 +51,7 @@ app.get("/metro/lineas", async (req, res, next) => {
         },
       }) => ({ id: idLinea, linea: nombreLinea, descripcion: descripcionLinea })
     );
-    res.setHeader("Content-Type", "application/json");
+
     res.json({ lineasMetro: lineasMetro });
   } catch (error) {
     if (error.code === "ECONNREFUSED") {
@@ -69,8 +69,13 @@ app.get("/metro/linea/:linea", async (req, res, next) => {
       ({ properties: { NOM_LINIA: nombreLinea } }) =>
         nombreLinea.toUpperCase() === linea.toUpperCase()
     );
-    if (!lineaEncontrada)
-      throw new Error("No se ha encontrado la línea especificada!");
+    if (!lineaEncontrada) {
+      const nuevoError = new Error(
+        "No se ha encontrado la línea especificada!"
+      );
+      nuevoError.codigo = 500;
+      return next(nuevoError);
+    }
 
     const {
       properties: {
@@ -85,10 +90,13 @@ app.get("/metro/linea/:linea", async (req, res, next) => {
       !datosParadasLinea ||
       !datosParadasLinea.features ||
       datosParadasLinea.features.length === 0
-    )
-      throw new Error(
+    ) {
+      const nuevoError = new Error(
         "No se han encontrado paradas para la línea especificada!"
       );
+      nuevoError.codigo = 500;
+      return next(nuevoError);
+    }
 
     const paradasLineaMetro = datosParadasLinea.features.map(
       ({
@@ -96,7 +104,6 @@ app.get("/metro/linea/:linea", async (req, res, next) => {
       }) => ({ id: idEstacion, nombre: nombreEstacion })
     );
 
-    res.setHeader("Content-Type", "application/json");
     res.json({
       linea: nombreLinea,
       descripcion: descripcionLinea,
@@ -125,5 +132,7 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
-  res.status(500).send("Error general");
+  const codigo = error.code || 500;
+  const mensaje = error.message || "Error general";
+  res.status(codigo).send(mensaje);
 });
