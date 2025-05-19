@@ -1,12 +1,12 @@
 {
-  "name": "ejercicio-nodejs-1-base",
+  "name": "ejercicio-nodejs-5-api-tmb",
   "version": "1.0.0",
   "type": "module",
   "description": "",
-  "main": "index.js",
+  "main": "tmb.js",
   "scripts": {
     "prestart": "clear",
-    "start": "node index"
+    "start": "node tmb"
   },
   "keywords": [],
   "author": "",
